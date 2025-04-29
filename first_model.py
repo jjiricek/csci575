@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 # train random forest model
 
 # load dataset
-df = pd.read_csv('data/cleaned_mate_in_one_puzzles.csv').head(10000)
+df = pd.read_csv('data/cleaned_mate_in_one_puzzles.csv').head(1000)
 print("Dataset successfully loaded from CSV.")
 
 # def fxn to turn FEN into simple feature vector
@@ -34,9 +34,13 @@ def fen_to_features(fen):
 X = df['FEN'].apply(fen_to_features).tolist()
 X = np.array(X)
 
+# attempted improvement: use destination square as baseline
+df['target_square'] = df['Moves'].apply(lambda m: m[-2:])
+
 # encode moves as labels
 le = LabelEncoder()
-y = le.fit_transform(df['Moves'])
+# y = le.fit_transform(df['Moves'])
+y = le.fit_transform(df['target_square'])
 print("Data successfully loaded into dataframe & encoded.")
 
 # train test split data
