@@ -8,13 +8,14 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
 
 # APPROACH:
 # encode FEN as string of categorical tokens
 # train random forest model
 
 # load dataset
-df = pd.read_csv('data/cleaned_mate_in_one_puzzles.csv').head(1000)
+df = pd.read_csv('data/cleaned_mate_in_one_puzzles.csv').head(10000)
 print("Dataset successfully loaded from CSV.")
 
 # def fxn to turn FEN into simple feature vector
@@ -47,11 +48,18 @@ print("Data successfully loaded into dataframe & encoded.")
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # train random forest classifier
-print("Training random forest classifier...")
-clf = RandomForestClassifier(n_estimators=100)
-clf.fit(X_train, y_train)
-print("Classifier fitted to training data.")
+# print("Training random forest classifier...")
+# clf = RandomForestClassifier(n_estimators=100)
+# clf.fit(X_train, y_train)
+# print("Classifier fitted to training data.")
+
+# now let's try a neural network!
+print("Training neural network ...")
+model = MLPClassifier(hidden_layer_sizes=(256,128), activation='relu', max_iter=10000)
+model.fit(X_train, y_train)
+print("Neural network fitted to training data.")
 
 # evaluate
-accuracy = clf.score(X_test, y_test)
+# accuracy = clf.score(X_test, y_test) - for rand forest model
+accuracy = model.score(X_test, y_test)
 print(f"Test accuracy: {accuracy:.2f}")
