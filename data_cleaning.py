@@ -1,15 +1,13 @@
 import pandas as pd
 
-# Load the dataset
 df = pd.read_csv('data/lichess_db_puzzle.csv')
 
-# Define the themes of interest (in lowercase for comparison)
 themes_of_interest = ['fork', 'skewer', 'pin', 'mate']
 
 def find_first_theme(theme_str):
     if pd.isna(theme_str):
         return None
-    tokens = theme_str.lower().split()  # space-separated
+    tokens = theme_str.lower().split() 
     for theme in themes_of_interest:
         if theme in tokens:
             return theme.capitalize()
