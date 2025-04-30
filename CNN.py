@@ -19,7 +19,8 @@ class ChessTacticCNN(nn.Module):
         x = torch.relu(self.conv2(x))
         x = torch.relu(self.conv3(x))
         x = x.view(x.size(0), -1)  # Flatten
-        x = torch.sigmoid(self.fc(x))  # Multi-label: sigmoid (independent probabilities)
+        #x = torch.sigmoid(self.fc(x))  # Multi-label: sigmoid (independent probabilities)
+        x = self.fc(x)
         return x
 
 class ChessTacticDataset(Dataset):
@@ -37,13 +38,17 @@ class ChessTacticDataset(Dataset):
         tensor = board_to_tensor(board)
         input_tensor = torch.tensor(tensor, dtype=torch.float32)
         
-        label_tensor = torch.zeros(4)
-        label_tensor[label_map[label]] = 1.0
+        # label_tensor = torch.zeros(4)
+        # label_tensor[label_map[label]] = 1.0
 
-        return input_tensor, label_tensor
+        # return input_tensor, label_tensor
+
+        label_index = label_map[label]
+
+        return input_tensor, label_index
 
 if __name__ == "__main__":
-    dataset = ChessTacticDataset('data/puzzles_tactic_length_1.csv')
+    dataset = ChessTacticDataset('data/one_move_puzzles.csv')
 
     train_size = int(0.8 * len(dataset))
     test_size = len(dataset) - train_size
@@ -54,10 +59,10 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_dataset, batch_size=32)   
 
     model = ChessTacticCNN()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    criterion = nn.BCELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    criterion = nn.CrossEntropyLoss()
 
-    for epoch in range(10):
+    for epoch in range(25):
         model.train()
         total_loss = 0.0
         for inputs, labels in train_loader:
@@ -69,8 +74,8 @@ if __name__ == "__main__":
             total_loss += loss.item()
         print(f"Epoch {epoch+1}: Train Loss = {total_loss / len(train_loader):.4f}")
 
-    torch.save(model.state_dict(), 'chess_tactic_cnn_weights_one_move.pth')
-    print("Model weights saved to 'chess_tactic_cnn_weights_one_move.pth'")
+    torch.save(model.state_dict(), 'chess_tactic_cnn_weights_half_move_softmax_cross_entropy_25_epochs.pth')
+    print("Model weights saved to 'chess_tactic_cnn_weights_half_move_softmax_cross_entropy_25_epochs.pth'")
 
     model.eval()
     correct, total = 0, 0
@@ -78,9 +83,8 @@ if __name__ == "__main__":
         for inputs, labels in test_loader:
             outputs = model(inputs)
             predicted = torch.argmax(outputs, dim=1)
-            actual = torch.argmax(labels, dim=1)
-            correct += (predicted == actual).sum().item()
-            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0) 
     print(f"Test Accuracy: {100 * correct / total:.2f}%")
 
 
